@@ -1,6 +1,5 @@
 #!/usr/bin/env zx
 import 'zx/globals'
-import https from 'node:https';
 
 // export AKEYLESS_TOKEN=$(akeyless auth --access-id p-jgk2szbi1vwd --access-type saml --json | jq -r '.token')
 
@@ -163,57 +162,11 @@ if (process.env.KUBERNETES_SERVICE_HOST) {
         console.log('flags', flags);
         tokenReviewerTestResult = await $`curl ${flags}`;
     } else {
-        if (hasKubectl) {
-            console.log('Kubectl Detected, using kubectl to get a running pod service account JWT');
-            console.log('Run this command to get the a running pod service account JWT : ');
-            console.log('')
-            const kubectlFlags = [
-                'run',
-                '-q',
-                '-i',
-                '-t',
-                `alp-${(Math.random() + 1).toString(36).substring(7)}`,
-                '--image=alpine',
-                '--restart=Never',
-                '--rm',
-                '--command',
-                '--',
-                'cat',
-                '/var/run/secrets/kubernetes.io/serviceaccount/token'
-            ];
-            const k8sJWTData = await $`kubectl ${kubectlFlags}`;
-            const k8sJWT = k8sJWTData.toString();
-            const headers = {
-                'Authorization': `Bearer ${akeylessK8sAuthConfigJSON?.k8s_token_reviewer_jwt}`,
-                'Content-Type': 'application/json; charset=utf-8',
-            }
-            const json_data = {
-                'kind': 'TokenReview',
-                'apiVersion': 'authentication.k8s.io/v1',
-                'spec': {
-                    'token': k8sJWT,
-                },
-            }
-            const httpsAgent = new https.Agent({
-                rejectUnauthorized: false,
-            });
-            const response = await fetch(`${kubeClusterHostAPI}/apis/authentication.k8s.io/v1/tokenreviews`, {
-                method: 'post',
-                body: JSON.stringify(json_data),
-                headers: headers,
-                agent: httpsAgent,
-            });
-            
-            const data = await response.json();
-            console.log('data', data);
-            tokenReviewerTestResult = JSON.stringify(data);
-        } else {
-            echo(`Kubernetes not detected and no JWT from a running pod was supplied so unable to test token reviewer`);
-            echo(`Set the AKEYLESS_K8S_RUNNING_POD_SERVICE_ACCOUNT_TOKEN environment variable to be the value of a k8s JWT from a running pod`);
-            echo(`Run the following command to get a JWT from a running pod:`);
-            echo(`kubectl exec -it <pod-name> -- sh -c "cat /var/run/secrets/kubernetes.io/serviceaccount/token"`);
-            echo(`e.g. export AKEYLESS_K8S_RUNNING_POD_SERVICE_ACCOUNT_TOKEN="<JWT>"`);
-        }
+        echo(`Kubernetes not detected and no JWT from a running pod was supplied so unable to test token reviewer`);
+        echo(`Set the AKEYLESS_K8S_RUNNING_POD_SERVICE_ACCOUNT_TOKEN environment variable to be the value of a k8s JWT from a running pod`);
+        echo(`Run the following command to get a JWT from a running pod:`);
+        echo(`kubectl exec -it <pod-name> -- sh -c "cat /var/run/secrets/kubernetes.io/serviceaccount/token"`);
+        echo(`e.g. export AKEYLESS_K8S_RUNNING_POD_SERVICE_ACCOUNT_TOKEN="<JWT>"`);
     }
 }
 if (tokenReviewerTestResult) {
