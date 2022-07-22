@@ -73,7 +73,7 @@ const akeylessK8sAuthConfigsData = await $`curl -s -H 'Authorization: Bearer ${a
 const akeylessK8sAuthConfigsJSON = JSON.parse(akeylessK8sAuthConfigsData.toString());
 
 const akeylessK8sAuthConfigs = akeylessK8sAuthConfigsJSON?.k8s_auths?.map(a => a.name);
-// console.log('Current k8s Auth Configs :', akeylessK8sAuthConfigs);
+console.log('Current k8s Auth Configs :', akeylessK8sAuthConfigs);
 if (!(akeylessK8sAuthConfigs && akeylessK8sAuthConfigs?.length > 0)) {
     echo('No k8s auth configs found, exiting...');
     process.exit(1);
@@ -110,7 +110,7 @@ const kubeClusterCAcertificate = akeylessKubeconfigJSON?.clusters[0]?.cluster?.[
 const kubeClusterHostAPI = akeylessKubeconfigJSON?.clusters[0]?.cluster?.server;
 
 const akeylessK8sAuthConfigJSON = akeylessK8sAuthConfigsJSON?.k8s_auths?.find(a => a.name === akeylessGatewayK8sAuthConfigName);
-console.log('akeylessK8sAuthConfigJSON :', akeylessK8sAuthConfigJSON);
+// console.log('akeylessK8sAuthConfigJSON :', akeylessK8sAuthConfigJSON);
 
 if (akeylessK8sAuthConfigJSON?.k8s_ca_cert === kubeClusterCAcertificate) {
     console.log(chalk.black.bgGreen(' - Akeyless K8s Auth Config CA cert matches the configuration in kubectl config  1 of 3 '));
