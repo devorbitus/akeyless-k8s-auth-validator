@@ -73,7 +73,7 @@ const akeylessK8sAuthConfigsData = await $`curl -s -H 'Authorization: Bearer ${a
 const akeylessK8sAuthConfigsJSON = JSON.parse(akeylessK8sAuthConfigsData.toString());
 
 const akeylessK8sAuthConfigs = akeylessK8sAuthConfigsJSON?.k8s_auths?.map(a => a.name);
-console.log('Current k8s Auth Configs :', akeylessK8sAuthConfigs);
+// console.log('Current k8s Auth Configs :', akeylessK8sAuthConfigs);
 if (!(akeylessK8sAuthConfigs && akeylessK8sAuthConfigs?.length > 0)) {
     echo('No k8s auth configs found, exiting...');
     process.exit(1);
