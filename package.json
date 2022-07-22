@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker-build": "docker build --platform linux/amd64,linux/arm64 -t devorbitus/akeyless-k8s-auth-validator . --output type=registry"
   },
   "author": "",
   "license": "ISC",
