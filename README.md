@@ -14,8 +14,10 @@
 - the utility is designed to be run using the following command:
   
     ```sh
-    kubectl run -q -i -t "alp-$(echo $RANDOM | md5sum | head -c 5; echo;)" --image=devorbitus/akeyless-k8s-auth-validator \
-    --restart=Never --rm --env="AKEYLESS_CONFIG_URL=https://gw-config.cg.akeyless.fans" \
+    kubectl run -q -i -t "alp-$(echo $RANDOM | md5sum | head -c 5; echo;)" \
+    --image=devorbitus/akeyless-k8s-auth-validator \
+    --restart=Never --rm \
+    --env="AKEYLESS_CONFIG_URL=https://gw-config.cg.akeyless.fans" \
     --env="AKEYLESS_TOKEN=<replace-with-akeyless-short-token>" \
     --env="AKEYLESS_K8S_AUTH_CONFIG_NAME=cg-gruel1" \
     --env="AKEYLESS_KUBECONFIG_BASE64=$(kubectl config view --raw --minify --flatten -o json | base64)"
