@@ -26,7 +26,7 @@ try {
     console.log('akeylessWhich :', p.toString());
     process.exitCode = 1
 }
-// $.verbose = false;
+$.verbose = false;
 let akeylessGatewayConfigUrl = '';
 if(process.env.AKEYLESS_CONFIG_URL) {
     akeylessGatewayConfigUrl = process.env.AKEYLESS_CONFIG_URL;
@@ -96,6 +96,12 @@ if (process.env.AKEYLESS_KUBECONFIG_BASE64) {
     console.log('Found Akeyless Kubeconfig Base64 in environment variable, using that...');
     akeylessKubeconfig = Buffer.from(akeylessKubeconfigBase64, 'base64');
 } else {
+    if(!hasKubectl) {
+        echo(chalk.whiteBright.bgRed('No kubectl found, exiting...'));
+        echo('Set the AKEYLESS_KUBECONFIG_BASE64 environment variable to the base64 encoded kubeconfig file to continue...');
+        echo()
+        process.exit(1);
+    }
     const akeylessKubeconfigData = await $`kubectl config view --raw --minify --flatten -o json`
     akeylessKubeconfig = akeylessKubeconfigData.toString();
 }
