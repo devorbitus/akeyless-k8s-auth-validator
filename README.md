@@ -20,5 +20,9 @@
     --env="AKEYLESS_CONFIG_URL=https://gw-config.cg.akeyless.fans" \
     --env="AKEYLESS_TOKEN=<replace-with-akeyless-short-token>" \
     --env="AKEYLESS_K8S_AUTH_CONFIG_NAME=cg-gruel1" \
-    --env="AKEYLESS_KUBECONFIG_BASE64=$(kubectl config view --raw --minify --flatten -o json | base64)"
+    --env="AKEYLESS_KUBECONFIG_BASE64=$(kubectl config view --raw --minify --flatten -o json | base64)" \
+    --env="AKEYLESS_API_GW_URL=https://gw-api-v2.cg.akeyless.fans" \
+    --env="AKEYLESS_VERBOSE_LOGGING=true" \
+    --env="AKEYLESS_K8S_AUTH_ACCESS_ID=<replace-with-access-id>" \
+    --env="AKEYLESS_K8S_ACCESS_ID=<replace-with-access-id>"
     ```

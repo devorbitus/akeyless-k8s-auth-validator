@@ -1,13 +1,20 @@
 #!/usr/bin/env zx
 import 'zx/globals'
-
 // export AKEYLESS_TOKEN=$(akeyless auth --access-id p-jgk2szbi1vwd --access-type saml --json | jq -r '.token')
 
 if (process.env.KUBERNETES_SERVICE_HOST) {
     process.env.AKEYLESS_KUBECTL_NOT_REQUIRED = true;
 }
 
+let verboseLoggingEnabled = false;
+if (process.env.AKEYLESS_VERBOSE_LOGGING) {
+    verboseLoggingEnabled = true;
+}
+
+$.verbose = verboseLoggingEnabled;
+
 let hasKubectl = false;
+const validationResults =[];
 if (!process.env.AKEYLESS_KUBECTL_NOT_REQUIRED) {
     try {
         const kubectlWhich = await which('kubectl')
@@ -26,7 +33,7 @@ try {
     console.log('akeylessWhich :', p.toString());
     process.exitCode = 1
 }
-$.verbose = false;
+
 let akeylessGatewayConfigUrl = '';
 if(process.env.AKEYLESS_CONFIG_URL) {
     akeylessGatewayConfigUrl = process.env.AKEYLESS_CONFIG_URL;
@@ -46,17 +53,36 @@ let isValidTokenData = null;
 let isValidToken = false;
 let isValidTokenStringJSON = '';
 try {
-    isValidTokenData = await $`akeyless validate-token -t ${akeylessShortToken} --json`;
-    const isValidTokenStringJSONstring = isValidTokenData?.toString()?.trim();
-    isValidTokenStringJSON = JSON.parse(isValidTokenStringJSONstring);
-    // console.log('isValidTokenStringJSON :', isValidTokenStringJSON);
-    const isValidTokenString = isValidTokenStringJSON?.is_valid;
-    if (isValidTokenString == true) {
-        console.log('Akeyless Token is valid');
-        isValidToken = true;
+    if (process.env.AKEYLESS_API_GW_URL) {
+        const tokenValidationCurlFlags = [
+            '-s',
+            '-k',
+            '--request',
+            'POST',
+            `${process.env.AKEYLESS_API_GW_URL}/validate-token`,
+            '--header',
+            "Accept: application/json",
+            '--header',
+            "Content-Type: application/json",
+            '--data',
+            `{"token":"${akeylessShortToken}"}`
+        ];
+        const tokenValidationCurlData = await $`curl ${tokenValidationCurlFlags}`;
+        const tokenValidationCurlDataJSON = JSON.parse(tokenValidationCurlData?.toString()?.trim());
+        isValidToken = tokenValidationCurlDataJSON?.is_valid || false;
     } else {
-        console.log(`Akeyless Token is invalid : [${isValidToken}]`);
-        isValidToken = false;
+        isValidTokenData = await $`akeyless validate-token -t ${akeylessShortToken} --json`;
+        const isValidTokenStringJSONstring = isValidTokenData?.toString()?.trim();
+        isValidTokenStringJSON = JSON.parse(isValidTokenStringJSONstring);
+        // console.log('isValidTokenStringJSON :', isValidTokenStringJSON);
+        const isValidTokenString = isValidTokenStringJSON?.is_valid;
+        if (isValidTokenString == true) {
+            console.log('Akeyless Token is valid');
+            isValidToken = true;
+        } else {
+            console.log(`Akeyless Token is invalid : [${isValidToken}]`);
+            isValidToken = false;
+        }
     }
 } catch (error) {
     // console.error(`Akeyless Token is invalid : [${error.toString()}]`);
@@ -101,9 +127,10 @@ if (process.env.AKEYLESS_KUBECONFIG_BASE64) {
         echo('Set the AKEYLESS_KUBECONFIG_BASE64 environment variable to the base64 encoded kubeconfig file to continue...');
         echo()
         process.exit(1);
+    } else {
+        const akeylessKubeconfigData = await $`kubectl config view --raw --minify --flatten -o json`
+        akeylessKubeconfig = akeylessKubeconfigData.toString();
     }
-    const akeylessKubeconfigData = await $`kubectl config view --raw --minify --flatten -o json`
-    akeylessKubeconfig = akeylessKubeconfigData.toString();
 }
 const akeylessKubeconfigJSON = JSON.parse(akeylessKubeconfig);
 const kubeClusterCAcertificate = akeylessKubeconfigJSON?.clusters[0]?.cluster?.["certificate-authority-data"];
@@ -113,28 +140,30 @@ const akeylessK8sAuthConfigJSON = akeylessK8sAuthConfigsJSON?.k8s_auths?.find(a 
 // console.log('akeylessK8sAuthConfigJSON :', akeylessK8sAuthConfigJSON);
 
 if (akeylessK8sAuthConfigJSON?.k8s_ca_cert === kubeClusterCAcertificate) {
-    console.log(chalk.black.bgGreen(' - Akeyless K8s Auth Config CA cert matches the configuration in kubectl config  1 of 3 '));
+    validationResults.push(chalk.black.bgGreen('  -  Akeyless K8s Auth Config CA cert matches the configuration in kubectl config   '))
+    console.log('Akeyless K8s Auth Config CA cert matches the configuration in kubectl config  1 of 3');
 } else {
-    console.log(chalk.whiteBright.bgRed('Akeyless K8s Auth Config CA cert does not match the configuration in kubectl config'));
+    validationResults.push(chalk.whiteBright.bgRed('  -  Akeyless K8s Auth Config CA cert does not match the configuration in kubectl config   '));
     console.log('Akeyless K8s Auth Config CA cert :', akeylessK8sAuthConfigJSON.k8s_ca_cert);
     console.log('kubectl config CA cert :', kubeClusterCAcertificate);
     process.exit(1);
 }
 
 if (akeylessK8sAuthConfigJSON?.k8s_host === kubeClusterHostAPI){
-    console.log(chalk.black.bgGreen(' - Akeyless K8s Auth Config Host matches the configuration in kubectl config  2 of 3 '));
+    validationResults.push(chalk.black.bgGreen('  -  Akeyless K8s Auth Config Host matches the configuration in kubectl config   '));
 } else {
-    console.log(chalk.whiteBright.bgRed('Akeyless K8s Auth Config Host does not match the configuration in kubectl config'));
+    validationResults.push(chalk.whiteBright.bgRed('  -  Akeyless K8s Auth Config Host does not match the configuration in kubectl config   '));
     console.log('Akeyless K8s Auth Config Host :', akeylessK8sAuthConfigJSON.k8s_host);
     console.log('kubectl config Host :', kubeClusterHostAPI);
     process.exit(1);
 }
 
 let tokenReviewerTestResult = null;
+let k8sJWT = null;
 if (process.env.KUBERNETES_SERVICE_HOST) {
     console.log('Kubernetes Deployment Detected = KUBERNETES_SERVICE_HOST :', process.env.KUBERNETES_SERVICE_HOST);
     const k8sJWTData = await $`cat /var/run/secrets/kubernetes.io/serviceaccount/token`;
-    const k8sJWT = k8sJWTData.toString();
+    k8sJWT = k8sJWTData.toString();
     const flags = [
         '-s',
         '-k',
@@ -178,11 +207,50 @@ if (process.env.KUBERNETES_SERVICE_HOST) {
 if (tokenReviewerTestResult) {
     const tokenReviewerTestResultJSON = JSON.parse(tokenReviewerTestResult?.toString()?.trim());
     if (tokenReviewerTestResultJSON?.status?.authenticated) {
-        console.log(chalk.black.bgGreen(' - Token Reviewer Validated  3 of 3 '));
+        validationResults.push(chalk.black.bgGreen('  -  Token Reviewer Validated   '));
     } else {
-        console.log(chalk.whiteBright.bgRed('  -  Token Reviewer NOT Validated  3 of 3  '));
+        validationResults.push(chalk.whiteBright.bgRed('  -  Token Reviewer NOT Validated   '));
         echo(`Testing of K8s Token Reviewer results : ${tokenReviewerTestResultJSON?.status?.authenticated}`);
         echo(`TokenReview JSON : ${JSON.stringify(tokenReviewerTestResultJSON,null,2)}`);
     }
 }
 
+if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
+    console.log('Akeyless K8s Access ID :', process.env.AKEYLESS_K8S_AUTH_ACCESS_ID);
+    if (akeylessK8sAuthConfigJSON?.k8s_access_id === process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
+        validationResults.push(chalk.black.bgGreen('  -  Akeyless K8s Auth Config Access ID matches the configuration in the k8s auth config   '));
+    } else {
+        validationResults.push(chalk.whiteBright.bgRed('  -  Akeyless K8s Auth Config Access ID does not match the configuration in the k8s auth config   '));
+        console.log('Akeyless K8s Auth Config Access ID :', akeylessK8sAuthConfigJSON.k8s_access_id);
+    }
+    const k8sAuthTestFlags = [
+        '-s',
+        '-k',
+        '--request',
+        'POST',
+        `${process.env.AKEYLESS_API_GW_URL}/auth`,
+        '--header',
+        "Accept: application/json",
+        '--header',
+        "Content-Type: application/json",
+        '--data',
+        `{"access-type":"k8s","k8s-auth-config-name":"${akeylessGatewayK8sAuthConfigName}","access-id":"${process.env.AKEYLESS_K8S_AUTH_ACCESS_ID}","gateway-url":"${process.env.AKEYLESS_CONFIG_URL}","k8s-service-account-token":"${k8sJWT}"}`
+    ];
+    const k8sAuthTestData = await $`curl ${k8sAuthTestFlags}`;
+    const k8sAuthTestDataJSON = JSON.parse(k8sAuthTestData?.toString()?.trim());
+    if (k8sAuthTestDataJSON?.token) {
+        validationResults.push(chalk.black.bgGreen('  -  K8s Auth Test Passed   '));
+    } else {
+        validationResults.push(chalk.whiteBright.bgRed('  -  K8s Auth Test Failed   '));
+        echo(`K8s Auth Test Data JSON : ${JSON.stringify(k8sAuthTestDataJSON,null,2)}`);
+    }
+} else {
+    validationResults.push(chalk.whiteBright.bgRed(' - Akeyless K8s Auth Access ID not set so unable to test k8s auth'));
+    process.exit(1);
+}
+
+if (validationResults.length > 0) {
+    console.log(chalk.black.bgCyan('   -  - Validation Results -  -   '));
+    const validationResultCount = validationResults.length;
+    validationResults.forEach((r, i) => console.log(` ${i + 1} of ${validationResultCount} ${r}`));
+}
