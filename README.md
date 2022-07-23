@@ -1,5 +1,14 @@
 # Akeyless Kubernetes Authentication Validator
 
+## Features
+
+- checks to make sure the cluster certificate of the k8s auth config matches the one in the kube config
+- checks to make sure the host of the k8s auth config matches the one in the kube config
+- checks to make sure the bearer token from the k8s auth config has token reviewer access to validate the pod directly against the cluster api
+- checks to make sure the access ID from the k8s auth config is on the list of users with access to the gateway API endpoint
+- checks to make sure the access ID being used is the same one configured in the k8s auth config
+- checks to make sure a running pod in the cluster is able to authenticate to Akeyless using k8s auth
+
 ## Prerequisites
 
 - the docker image  devorbitus/akeyless-k8s-auth-validator will need to be added to whatever image repository is used to be able to deploy it to k8s
