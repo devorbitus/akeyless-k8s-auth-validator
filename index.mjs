@@ -223,7 +223,7 @@ if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
         validationResults.push(chalk.whiteBright.bgRed('  -  Akeyless K8s Auth Config Access ID does not match the configuration in the k8s auth config   '));
         console.log('Akeyless K8s Auth Config Access ID :', akeylessK8sAuthConfigJSON.k8s_access_id);
     }
-    const k8sJWTbase64 = Buffer.to(k8sJWT,'base64');
+    const k8sJWTbase64 = Buffer.from(k8sJWT).toString('base64');
     const k8sAuthTestFlags = [
         '-s',
         '-k',
