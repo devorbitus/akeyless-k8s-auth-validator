@@ -117,7 +117,7 @@ while (!akeylessK8sAuthConfigs.includes(akeylessGatewayK8sAuthConfigName)) {
 console.log('akeylessGatewayK8sAuthConfigName :', akeylessGatewayK8sAuthConfigName);
 
 let akeylessKubeconfig = null;
-if (process.env.AKEYLESS_KUBECONFIG_BASE64) {
+if (process.env?.AKEYLESS_KUBECONFIG_BASE64) {
     const akeylessKubeconfigBase64 = process.env.AKEYLESS_KUBECONFIG_BASE64;
     console.log('Found Akeyless Kubeconfig Base64 in environment variable, using that...');
     akeylessKubeconfig = Buffer.from(akeylessKubeconfigBase64, 'base64');
@@ -146,7 +146,6 @@ if (akeylessK8sAuthConfigJSON?.k8s_ca_cert === kubeClusterCAcertificate) {
     validationResults.push(chalk.whiteBright.bgRed('  -  FAIL  -  Akeyless K8s Auth Config CA cert does not match the configuration in kubectl config   '));
     console.log('Akeyless K8s Auth Config CA cert :', akeylessK8sAuthConfigJSON.k8s_ca_cert);
     console.log('kubectl config CA cert :', kubeClusterCAcertificate);
-    process.exit(1);
 }
 
 if (akeylessK8sAuthConfigJSON?.k8s_host === kubeClusterHostAPI){
@@ -155,12 +154,11 @@ if (akeylessK8sAuthConfigJSON?.k8s_host === kubeClusterHostAPI){
     validationResults.push(chalk.whiteBright.bgRed('  -  FAIL  -  Akeyless K8s Auth Config Host does not match the configuration in kubectl config   '));
     console.log('Akeyless K8s Auth Config Host :', akeylessK8sAuthConfigJSON.k8s_host);
     console.log('kubectl config Host :', kubeClusterHostAPI);
-    process.exit(1);
 }
 
 let tokenReviewerTestResult = null;
 let k8sJWT = null;
-if (process.env.KUBERNETES_SERVICE_HOST) {
+if (process.env?.KUBERNETES_SERVICE_HOST) {
     console.log('Kubernetes Deployment Detected = KUBERNETES_SERVICE_HOST :', process.env.KUBERNETES_SERVICE_HOST);
     const k8sJWTData = await $`cat /var/run/secrets/kubernetes.io/serviceaccount/token`;
     k8sJWT = k8sJWTData.toString();
@@ -180,7 +178,7 @@ if (process.env.KUBERNETES_SERVICE_HOST) {
     tokenReviewerTestResult = await $`curl ${flags}`;
 } else {
     console.log('Kubernetes Deployment Not Detected');
-    if (process.env.AKEYLESS_K8S_RUNNING_POD_SERVICE_ACCOUNT_TOKEN) {
+    if (process.env?.AKEYLESS_K8S_RUNNING_POD_SERVICE_ACCOUNT_TOKEN) {
         const flags = [
             '-s',
             '-k',
@@ -215,7 +213,7 @@ if (tokenReviewerTestResult) {
     }
 }
 
-if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
+if (process.env?.AKEYLESS_K8S_AUTH_ACCESS_ID) {
     console.log('Akeyless K8s Access ID :', process.env.AKEYLESS_K8S_AUTH_ACCESS_ID);
     if (akeylessK8sAuthConfigJSON?.auth_method_access_id === process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
         validationResults.push(chalk.black.bgGreen('  -  SUCCESS  -  Akeyless K8s Auth Config Access ID matches the configuration in the k8s auth config   '));
@@ -247,7 +245,6 @@ if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
     }
 } else {
     validationResults.push(chalk.whiteBright.bgRed('  -  FAIL  -  Akeyless K8s Auth Access ID not set so unable to test k8s auth'));
-    process.exit(1);
 }
 
 if (validationResults.length > 0) {
