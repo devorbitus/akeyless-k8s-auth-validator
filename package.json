@@ -1,6 +1,6 @@
 {
   "name": "akeyless-k8s-auth-validator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.mjs",
   "scripts": {
