@@ -251,6 +251,7 @@ if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
 }
 
 if (validationResults.length > 0) {
+    echo(`\n\n\n`);
     console.log(chalk.black.bgCyan('   -  - Validation Results -  -   '));
     const validationResultCount = validationResults.length;
     validationResults.forEach((r, i) => console.log(` ${i + 1} of ${validationResultCount} ${r}`));
