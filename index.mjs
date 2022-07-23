@@ -223,6 +223,7 @@ if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
         validationResults.push(chalk.whiteBright.bgRed('  -  Akeyless K8s Auth Config Access ID does not match the configuration in the k8s auth config   '));
         console.log('Akeyless K8s Auth Config Access ID :', akeylessK8sAuthConfigJSON.k8s_access_id);
     }
+    const k8sJWTbase64 = Buffer.to(k8sJWT,'base64');
     const k8sAuthTestFlags = [
         '-s',
         '-k',
@@ -234,7 +235,7 @@ if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
         '--header',
         "Content-Type: application/json",
         '--data',
-        `{"access-type":"k8s","k8s-auth-config-name":"${akeylessGatewayK8sAuthConfigName}","access-id":"${process.env.AKEYLESS_K8S_AUTH_ACCESS_ID}","gateway-url":"${process.env.AKEYLESS_CONFIG_URL}","k8s-service-account-token":"${k8sJWT}"}`
+        `{"access-type":"k8s","k8s-auth-config-name":"${akeylessGatewayK8sAuthConfigName}","access-id":"${process.env.AKEYLESS_K8S_AUTH_ACCESS_ID}","gateway-url":"${process.env.AKEYLESS_CONFIG_URL}","k8s-service-account-token":"${k8sJWTbase64}"}`
     ];
     const k8sAuthTestData = await $`curl ${k8sAuthTestFlags}`;
     const k8sAuthTestDataJSON = JSON.parse(k8sAuthTestData?.toString()?.trim());
