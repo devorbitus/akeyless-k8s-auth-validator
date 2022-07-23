@@ -217,11 +217,11 @@ if (tokenReviewerTestResult) {
 
 if (process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
     console.log('Akeyless K8s Access ID :', process.env.AKEYLESS_K8S_AUTH_ACCESS_ID);
-    if (akeylessK8sAuthConfigJSON?.k8s_access_id === process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
+    if (akeylessK8sAuthConfigJSON?.auth_method_access_id === process.env.AKEYLESS_K8S_AUTH_ACCESS_ID) {
         validationResults.push(chalk.black.bgGreen('  -  Akeyless K8s Auth Config Access ID matches the configuration in the k8s auth config   '));
     } else {
         validationResults.push(chalk.whiteBright.bgRed('  -  Akeyless K8s Auth Config Access ID does not match the configuration in the k8s auth config   '));
-        console.log('Akeyless K8s Auth Config Access ID :', akeylessK8sAuthConfigJSON.k8s_access_id);
+        console.log('Akeyless K8s Auth Config Access ID :', akeylessK8sAuthConfigJSON.auth_method_access_id);
     }
     const k8sJWTbase64 = Buffer.from(k8sJWT).toString('base64');
     const k8sAuthTestFlags = [
