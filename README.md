@@ -8,6 +8,7 @@
 - checks to make sure the access ID from the k8s auth config is on the list of users with access to the gateway API endpoint
 - checks to make sure the access ID being used is the same one configured in the k8s auth config
 - checks to make sure a running pod in the cluster is able to authenticate to Akeyless using k8s auth
+- to enable verbose logging set this environment variable: `--env="AKEYLESS_VERBOSE_LOGGING=true" \`
 
 ## Prerequisites
 
@@ -31,6 +32,9 @@
     --env="AKEYLESS_K8S_AUTH_CONFIG_NAME=<replace-with-k8s-auth-config-name-on-this-gateway>" \
     --env="AKEYLESS_KUBECONFIG_BASE64=$(kubectl config view --raw --minify --flatten -o json | base64)" \
     --env="AKEYLESS_API_GW_URL=https://my-gateway-api-default-port-8081.example.com" \
-    --env="AKEYLESS_VERBOSE_LOGGING=true" \
     --env="AKEYLESS_K8S_AUTH_ACCESS_ID=<replace-with-access-id>"
     ```
+
+## Example Results
+
+[![asciicast](https://asciinema.org/a/cHyqWXx1FnwcB1QlXdA3pOm50.svg)](https://asciinema.org/a/cHyqWXx1FnwcB1QlXdA3pOm50)
