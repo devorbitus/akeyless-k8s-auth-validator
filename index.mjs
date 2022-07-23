@@ -141,7 +141,7 @@ const akeylessK8sAuthConfigJSON = akeylessK8sAuthConfigsJSON?.k8s_auths?.find(a 
 
 if (akeylessK8sAuthConfigJSON?.k8s_ca_cert === kubeClusterCAcertificate) {
     validationResults.push(chalk.black.bgGreen('  -  SUCCESS  -  Akeyless K8s Auth Config CA cert matches the configuration in kubectl config   '))
-    console.log('Akeyless K8s Auth Config CA cert matches the configuration in kubectl config  1 of 3');
+    // console.log('Akeyless K8s Auth Config CA cert matches the configuration in kubectl config');
 } else {
     validationResults.push(chalk.whiteBright.bgRed('  -  FAIL  -  Akeyless K8s Auth Config CA cert does not match the configuration in kubectl config   '));
     console.log('Akeyless K8s Auth Config CA cert :', akeylessK8sAuthConfigJSON.k8s_ca_cert);
