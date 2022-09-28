@@ -28,7 +28,7 @@
     --image=devorbitus/akeyless-k8s-auth-validator \
     --restart=Never --rm \
     --env="AKEYLESS_CONFIG_URL=https://my-gateway-config-screen-default-port-8000.example.com" \
-    --env="AKEYLESS_TOKEN=<replace-with-akeyless-short-token>" \
+    --env="AKEYLESS_TOKEN=$(akeyless auth --access-id=<access-id> --access-type saml --json | jq -r '.token')" \
     --env="AKEYLESS_K8S_AUTH_CONFIG_NAME=<replace-with-k8s-auth-config-name-on-this-gateway>" \
     --env="AKEYLESS_KUBECONFIG_BASE64=$(kubectl config view --raw --minify --flatten -o json | base64)" \
     --env="AKEYLESS_API_GW_URL=https://my-gateway-api-default-port-8081.example.com" \
