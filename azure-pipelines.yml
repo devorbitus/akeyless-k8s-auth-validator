@@ -23,6 +23,10 @@ steps:
     strPrefixType: 'custom'
     replaceCR: false
 
+
+- script: echo secret $(new secret3)
+  displayName: 'Display secret'
+
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 
