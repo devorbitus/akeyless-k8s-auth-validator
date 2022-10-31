@@ -19,7 +19,7 @@ steps:
     strToken: 't-5ee39fa07f598c7d30d0a824cc7e58ae'
     strKVEnginePath: 'secret/data'
     kvVersion: 'v1'
-    strSecretPath: '/new secret3'
+    strSecretPath: '/MySecret1'
     strPrefixType: 'custom'
     replaceCR: false
 
