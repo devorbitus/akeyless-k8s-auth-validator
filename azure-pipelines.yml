@@ -28,7 +28,7 @@ steps:
     targetType: 'inline'
     script: 'env | sort'
 
-- script: echo secret $(data)
+- script: echo secret value $(data)
   displayName: 'Display secret'
 
 - script: echo Hello, world!
