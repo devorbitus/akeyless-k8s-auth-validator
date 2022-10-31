@@ -24,7 +24,7 @@ steps:
     replaceCR: false
 
 
-- script: echo secret $(new secret3)
+- script: echo secret $(MySecret1)
   displayName: 'Display secret'
 
 - script: echo Hello, world!
